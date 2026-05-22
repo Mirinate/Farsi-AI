@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Badge } from '@/components/ui/Badge'
 import { formatDate, getInitials } from '@/lib/utils'
 import { Star, AlertCircle } from 'lucide-react'
-import { InviteUserButton } from '@/components/admin/InviteUserButton'
+import { AddCaregiverButton } from '@/components/admin/AddCaregiverButton'
 
 export default async function CaregiversPage() {
   const supabase = createClient()
@@ -36,7 +36,7 @@ export default async function CaregiversPage() {
       <PageHeader
         title="Caregivers"
         subtitle={`${caregivers?.length || 0} total caregivers`}
-        action={<InviteUserButton role="caregiver" />}
+        action={<AddCaregiverButton />}
       />
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">

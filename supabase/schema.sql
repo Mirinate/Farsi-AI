@@ -1,9 +1,8 @@
 -- ============================================================
 -- Mirinate Care — Full Database Schema with RLS
--- Run this in the Supabase SQL Editor
+-- Safe to re-run: drops policies before recreating them
 -- ============================================================
 
--- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================
@@ -24,18 +23,16 @@ CREATE TABLE IF NOT EXISTS agencies (
 
 ALTER TABLE agencies ENABLE ROW LEVEL SECURITY;
 
--- Public can read agency branding (needed for white-label pages)
+DROP POLICY IF EXISTS "Public can view agency branding" ON agencies;
 CREATE POLICY "Public can view agency branding"
-  ON agencies FOR SELECT
-  USING (true);
+  ON agencies FOR SELECT USING (true);
 
--- Only service role can insert/update agencies
+DROP POLICY IF EXISTS "Service role manages agencies" ON agencies;
 CREATE POLICY "Service role manages agencies"
-  ON agencies FOR ALL
-  USING (auth.role() = 'service_role');
+  ON agencies FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
--- USERS (mirrors auth.users with role info)
+-- USERS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -50,19 +47,18 @@ CREATE TABLE IF NOT EXISTS users (
 
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view members of their own agency" ON users;
 CREATE POLICY "Users can view members of their own agency"
   ON users FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Users can update their own profile" ON users;
 CREATE POLICY "Users can update their own profile"
-  ON users FOR UPDATE
-  USING (id = auth.uid());
+  ON users FOR UPDATE USING (id = auth.uid());
 
+DROP POLICY IF EXISTS "Service role full access to users" ON users;
 CREATE POLICY "Service role full access to users"
-  ON users FOR ALL
-  USING (auth.role() = 'service_role');
+  ON users FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- CAREGIVERS
@@ -81,26 +77,21 @@ CREATE TABLE IF NOT EXISTS caregivers (
 
 ALTER TABLE caregivers ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view caregivers" ON caregivers;
 CREATE POLICY "Agency members can view caregivers"
   ON caregivers FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can manage caregivers" ON caregivers;
 CREATE POLICY "Admins can manage caregivers"
   ON caregivers FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = caregivers.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = caregivers.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to caregivers" ON caregivers;
 CREATE POLICY "Service role full access to caregivers"
-  ON caregivers FOR ALL
-  USING (auth.role() = 'service_role');
+  ON caregivers FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- CLIENTS
@@ -120,26 +111,21 @@ CREATE TABLE IF NOT EXISTS clients (
 
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view clients" ON clients;
 CREATE POLICY "Agency members can view clients"
   ON clients FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can manage clients" ON clients;
 CREATE POLICY "Admins can manage clients"
   ON clients FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = clients.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = clients.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to clients" ON clients;
 CREATE POLICY "Service role full access to clients"
-  ON clients FOR ALL
-  USING (auth.role() = 'service_role');
+  ON clients FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- FAMILY MEMBERS
@@ -155,26 +141,21 @@ CREATE TABLE IF NOT EXISTS family_members (
 
 ALTER TABLE family_members ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view family members" ON family_members;
 CREATE POLICY "Agency members can view family members"
   ON family_members FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can manage family members" ON family_members;
 CREATE POLICY "Admins can manage family members"
   ON family_members FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = family_members.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = family_members.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to family_members" ON family_members;
 CREATE POLICY "Service role full access to family_members"
-  ON family_members FOR ALL
-  USING (auth.role() = 'service_role');
+  ON family_members FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- SHIFTS
@@ -193,34 +174,26 @@ CREATE TABLE IF NOT EXISTS shifts (
 
 ALTER TABLE shifts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view shifts" ON shifts;
 CREATE POLICY "Agency members can view shifts"
   ON shifts FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can manage shifts" ON shifts;
 CREATE POLICY "Admins can manage shifts"
   ON shifts FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = shifts.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = shifts.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Caregivers can update their own shifts" ON shifts;
 CREATE POLICY "Caregivers can update their own shifts"
   ON shifts FOR UPDATE
-  USING (
-    caregiver_id IN (
-      SELECT id FROM caregivers WHERE user_id = auth.uid()
-    )
-  );
+  USING (caregiver_id IN (SELECT id FROM caregivers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Service role full access to shifts" ON shifts;
 CREATE POLICY "Service role full access to shifts"
-  ON shifts FOR ALL
-  USING (auth.role() = 'service_role');
+  ON shifts FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- CHECKINS (EVV)
@@ -242,31 +215,24 @@ CREATE TABLE IF NOT EXISTS checkins (
 
 ALTER TABLE checkins ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view checkins" ON checkins;
 CREATE POLICY "Agency members can view checkins"
   ON checkins FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Caregivers can insert their own checkins" ON checkins;
 CREATE POLICY "Caregivers can insert their own checkins"
   ON checkins FOR INSERT
-  WITH CHECK (
-    caregiver_id IN (
-      SELECT id FROM caregivers WHERE user_id = auth.uid()
-    )
-  );
+  WITH CHECK (caregiver_id IN (SELECT id FROM caregivers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Caregivers can update their own checkins" ON checkins;
 CREATE POLICY "Caregivers can update their own checkins"
   ON checkins FOR UPDATE
-  USING (
-    caregiver_id IN (
-      SELECT id FROM caregivers WHERE user_id = auth.uid()
-    )
-  );
+  USING (caregiver_id IN (SELECT id FROM caregivers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Service role full access to checkins" ON checkins;
 CREATE POLICY "Service role full access to checkins"
-  ON checkins FOR ALL
-  USING (auth.role() = 'service_role');
+  ON checkins FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- JOB POSTINGS
@@ -285,26 +251,21 @@ CREATE TABLE IF NOT EXISTS job_postings (
 
 ALTER TABLE job_postings ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view job postings" ON job_postings;
 CREATE POLICY "Agency members can view job postings"
   ON job_postings FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can manage job postings" ON job_postings;
 CREATE POLICY "Admins can manage job postings"
   ON job_postings FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = job_postings.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = job_postings.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to job_postings" ON job_postings;
 CREATE POLICY "Service role full access to job_postings"
-  ON job_postings FOR ALL
-  USING (auth.role() = 'service_role');
+  ON job_postings FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- APPLICATIONS
@@ -324,31 +285,23 @@ CREATE TABLE IF NOT EXISTS applications (
 
 ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admins can view applications" ON applications;
 CREATE POLICY "Admins can view applications"
   ON applications FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = applications.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = applications.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Admins can manage applications" ON applications;
 CREATE POLICY "Admins can manage applications"
   ON applications FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = applications.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = applications.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to applications" ON applications;
 CREATE POLICY "Service role full access to applications"
-  ON applications FOR ALL
-  USING (auth.role() = 'service_role');
+  ON applications FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- TRAINING MODULES
@@ -365,26 +318,21 @@ CREATE TABLE IF NOT EXISTS training_modules (
 
 ALTER TABLE training_modules ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view training modules" ON training_modules;
 CREATE POLICY "Agency members can view training modules"
   ON training_modules FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can manage training modules" ON training_modules;
 CREATE POLICY "Admins can manage training modules"
   ON training_modules FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = training_modules.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = training_modules.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to training_modules" ON training_modules;
 CREATE POLICY "Service role full access to training_modules"
-  ON training_modules FOR ALL
-  USING (auth.role() = 'service_role');
+  ON training_modules FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- TRAINING PROGRESS
@@ -401,34 +349,26 @@ CREATE TABLE IF NOT EXISTS training_progress (
 
 ALTER TABLE training_progress ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view training progress" ON training_progress;
 CREATE POLICY "Agency members can view training progress"
   ON training_progress FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Caregivers can update their own training progress" ON training_progress;
 CREATE POLICY "Caregivers can update their own training progress"
   ON training_progress FOR ALL
-  USING (
-    caregiver_id IN (
-      SELECT id FROM caregivers WHERE user_id = auth.uid()
-    )
-  );
+  USING (caregiver_id IN (SELECT id FROM caregivers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Admins can manage training progress" ON training_progress;
 CREATE POLICY "Admins can manage training progress"
   ON training_progress FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = training_progress.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = training_progress.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to training_progress" ON training_progress;
 CREATE POLICY "Service role full access to training_progress"
-  ON training_progress FOR ALL
-  USING (auth.role() = 'service_role');
+  ON training_progress FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- DOCUMENTS
@@ -446,39 +386,31 @@ CREATE TABLE IF NOT EXISTS documents (
 
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own documents" ON documents;
 CREATE POLICY "Users can view their own documents"
-  ON documents FOR SELECT
-  USING (user_id = auth.uid());
+  ON documents FOR SELECT USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Admins can view all agency documents" ON documents;
 CREATE POLICY "Admins can view all agency documents"
   ON documents FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = documents.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = documents.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Users can upload their own documents" ON documents;
 CREATE POLICY "Users can upload their own documents"
-  ON documents FOR INSERT
-  WITH CHECK (user_id = auth.uid());
+  ON documents FOR INSERT WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Admins can manage documents" ON documents;
 CREATE POLICY "Admins can manage documents"
   ON documents FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = documents.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = documents.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to documents" ON documents;
 CREATE POLICY "Service role full access to documents"
-  ON documents FOR ALL
-  USING (auth.role() = 'service_role');
+  ON documents FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- MESSAGES
@@ -496,23 +428,19 @@ CREATE TABLE IF NOT EXISTS messages (
 
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own messages" ON messages;
 CREATE POLICY "Users can view their own messages"
   ON messages FOR SELECT
-  USING (
-    sender_id = auth.uid() OR recipient_id = auth.uid()
-  );
+  USING (sender_id = auth.uid() OR recipient_id = auth.uid());
 
+DROP POLICY IF EXISTS "Admins can view all agency messages" ON messages;
 CREATE POLICY "Admins can view all agency messages"
   ON messages FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = messages.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = messages.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Users can send messages" ON messages;
 CREATE POLICY "Users can send messages"
   ON messages FOR INSERT
   WITH CHECK (
@@ -520,13 +448,13 @@ CREATE POLICY "Users can send messages"
     AND agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "Recipients can mark messages read" ON messages;
 CREATE POLICY "Recipients can mark messages read"
-  ON messages FOR UPDATE
-  USING (recipient_id = auth.uid());
+  ON messages FOR UPDATE USING (recipient_id = auth.uid());
 
+DROP POLICY IF EXISTS "Service role full access to messages" ON messages;
 CREATE POLICY "Service role full access to messages"
-  ON messages FOR ALL
-  USING (auth.role() = 'service_role');
+  ON messages FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- VISIT NOTES
@@ -545,23 +473,19 @@ CREATE TABLE IF NOT EXISTS visit_notes (
 
 ALTER TABLE visit_notes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Agency members can view visit notes" ON visit_notes;
 CREATE POLICY "Agency members can view visit notes"
   ON visit_notes FOR SELECT
-  USING (
-    agency_id = (SELECT agency_id FROM users WHERE id = auth.uid())
-  );
+  USING (agency_id = (SELECT agency_id FROM users WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Caregivers can insert their own visit notes" ON visit_notes;
 CREATE POLICY "Caregivers can insert their own visit notes"
   ON visit_notes FOR INSERT
-  WITH CHECK (
-    caregiver_id IN (
-      SELECT id FROM caregivers WHERE user_id = auth.uid()
-    )
-  );
+  WITH CHECK (caregiver_id IN (SELECT id FROM caregivers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Service role full access to visit_notes" ON visit_notes;
 CREATE POLICY "Service role full access to visit_notes"
-  ON visit_notes FOR ALL
-  USING (auth.role() = 'service_role');
+  ON visit_notes FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
 -- ALERTS
@@ -578,41 +502,26 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admins can view their agency alerts" ON alerts;
 CREATE POLICY "Admins can view their agency alerts"
   ON alerts FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = alerts.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = alerts.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Admins can update alerts" ON alerts;
 CREATE POLICY "Admins can update alerts"
   ON alerts FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid()
-        AND agency_id = alerts.agency_id
-        AND role = 'admin'
-    )
-  );
+  USING (EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND agency_id = alerts.agency_id AND role = 'admin'
+  ));
 
+DROP POLICY IF EXISTS "Service role full access to alerts" ON alerts;
 CREATE POLICY "Service role full access to alerts"
-  ON alerts FOR ALL
-  USING (auth.role() = 'service_role');
+  ON alerts FOR ALL USING (auth.role() = 'service_role');
 
 -- ============================================================
--- STORAGE BUCKETS (run separately in Supabase dashboard or via API)
--- ============================================================
--- INSERT INTO storage.buckets (id, name, public) VALUES ('agency-logos', 'agency-logos', true);
--- INSERT INTO storage.buckets (id, name, public) VALUES ('documents', 'documents', false);
--- INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);
-
--- ============================================================
--- HELPFUL INDEXES
+-- INDEXES
 -- ============================================================
 CREATE INDEX IF NOT EXISTS idx_users_agency_id ON users(agency_id);
 CREATE INDEX IF NOT EXISTS idx_caregivers_agency_id ON caregivers(agency_id);

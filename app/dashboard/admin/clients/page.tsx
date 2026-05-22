@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { formatDate } from '@/lib/utils'
-import { Phone, MapPin, Plus } from 'lucide-react'
+import { Phone, MapPin } from 'lucide-react'
 import { AddClientButton } from '@/components/admin/AddClientButton'
-import { InviteUserButton } from '@/components/admin/InviteUserButton'
+import { AddFamilyMemberButton } from '@/components/admin/AddFamilyMemberButton'
 
 export default async function ClientsPage() {
   const supabase = createClient()
@@ -35,7 +35,12 @@ export default async function ClientsPage() {
       <PageHeader
         title="Clients"
         subtitle={`${clients?.length || 0} clients enrolled`}
-        action={<AddClientButton agencyId={profile!.agency_id} />}
+        action={
+          <div className="flex gap-2">
+            <AddFamilyMemberButton clients={clients?.map(c => ({ id: c.id, full_name: c.full_name })) || []} />
+            <AddClientButton agencyId={profile!.agency_id} />
+          </div>
+        }
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

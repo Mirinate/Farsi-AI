@@ -50,11 +50,17 @@ const clientNav = [
   { href: '/dashboard/client/messages', label: 'Messages', icon: MessageSquare },
 ]
 
-const navByRole: Record<UserRole, typeof adminNav> = {
+const superadminNav = [
+  { href: '/dashboard/superadmin', label: 'Agencies', icon: Briefcase },
+  { href: '/dashboard/superadmin/settings', label: 'Platform Settings', icon: Settings },
+]
+
+const navByRole: Record<UserRole | 'superadmin', typeof adminNav> = {
   admin: adminNav,
   caregiver: caregiverNav,
   family: familyNav,
   client: clientNav,
+  superadmin: superadminNav,
 }
 
 export function Sidebar() {
@@ -75,7 +81,11 @@ export function Sidebar() {
       {/* Agency branding */}
       <div className="p-5 border-b border-slate-700">
         <div className="flex items-center gap-3">
-          {agency?.logo_url ? (
+          {profile?.role === 'superadmin' ? (
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold bg-gradient-to-br from-purple-600 to-blue-600">
+              M
+            </div>
+          ) : agency?.logo_url ? (
             <Image
               src={agency.logo_url}
               alt={agency.name}
@@ -93,9 +103,11 @@ export function Sidebar() {
           )}
           <div className="min-w-0">
             <p className="text-white font-semibold text-sm truncate">
-              {agency?.name || 'Mirinate Care'}
+              {profile?.role === 'superadmin' ? 'Mirinate Platform' : agency?.name || 'Mirinate Care'}
             </p>
-            <p className="text-slate-400 text-xs capitalize">{profile?.role}</p>
+            <p className="text-slate-400 text-xs capitalize">
+              {profile?.role === 'superadmin' ? 'Platform Admin' : profile?.role}
+            </p>
           </div>
         </div>
       </div>

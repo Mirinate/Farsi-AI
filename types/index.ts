@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'caregiver' | 'client' | 'family'
+export type UserRole = 'admin' | 'caregiver' | 'client' | 'family' | 'superadmin'
 export type ShiftStatus = 'scheduled' | 'checked_in' | 'completed' | 'no_show'
 export type ShiftRepeat = 'none' | 'daily' | 'weekdays' | 'weekly'
 export type DocumentType = 'license' | 'bg_check' | 'tb_test' | 'i9'
