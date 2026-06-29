@@ -26,34 +26,20 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-
   const { pathname } = request.nextUrl
 
-  // Public routes that don't need auth
+  // Public routes
   const publicPaths = ['/login', '/signup', '/invite', '/reset-password', '/auth/callback', '/api/signup', '/api/invite', '/api/stripe/webhook']
   const isPublic = publicPaths.some((p) => pathname.startsWith(p))
 
+  // Redirect unauthenticated users to login
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  // Redirect authenticated users away from login/signup
   if (user && (pathname === '/login' || pathname === '/signup')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
-
-  // Role-based redirect from /dashboard
-  if (user && pathname === '/dashboard') {
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role) {
-      return NextResponse.redirect(
-        new URL(`/dashboard/${profile.role}`, request.url)
-      )
-    }
   }
 
   return supabaseResponse

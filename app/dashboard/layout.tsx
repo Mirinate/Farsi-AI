@@ -16,7 +16,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq('id', user.id)
     .single()
 
-  if (!profile) redirect('/login')
+  // Don't redirect to login if profile is missing — that causes a redirect loop.
+  // The individual pages will handle missing profiles.
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-600 font-medium">Setting up your account…</p>
+          <p className="text-sm text-gray-400 mt-1">Please refresh in a moment.</p>
+        </div>
+      </div>
+    )
+  }
 
   const { data: agency } = await supabase
     .from('agencies')
