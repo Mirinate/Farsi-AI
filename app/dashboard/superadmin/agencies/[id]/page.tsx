@@ -221,15 +221,15 @@ export default async function AgencyDetailPage({ params }: { params: { id: strin
 
           {/* Action Buttons */}
           <div className="space-y-2 pt-2">
-            <Link href={`/dashboard/admin?agency=${agency.id}`} className="block w-full border border-blue-600 text-blue-600 text-sm font-medium py-2 rounded-lg hover:bg-blue-50 transition-colors text-center">
+            <Link href="/dashboard/admin" className="block w-full border border-blue-600 text-blue-600 text-sm font-medium py-2 rounded-lg hover:bg-blue-50 transition-colors text-center">
               View Dashboard
             </Link>
-            <Link href={`/dashboard/superadmin/agencies/${agency.id}/settings`} className="block w-full border border-gray-300 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition-colors text-center">
+            <Link href={`/dashboard/superadmin/settings`} className="block w-full border border-gray-300 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition-colors text-center">
               Edit Settings
             </Link>
-            <button className="w-full border border-red-600 text-red-600 text-sm font-medium py-2 rounded-lg hover:bg-red-50 transition-colors">
+            <Link href="/dashboard/superadmin" className="block w-full border border-red-600 text-red-600 text-sm font-medium py-2 rounded-lg hover:bg-red-50 transition-colors text-center">
               Suspend Agency
-            </button>
+            </Link>
           </div>
         </div>
       </div>
