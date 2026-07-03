@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { BrandingSettingsForm } from '@/components/admin/BrandingSettingsForm'
+import { GHLSettingsForm } from '@/components/admin/GHLSettingsForm'
 import { InviteUserButton } from '@/components/admin/InviteUserButton'
-import { CreditCard, Users, Settings } from 'lucide-react'
+import { CreditCard, Users, Settings, Plug } from 'lucide-react'
 
 export default async function SettingsPage() {
   const supabase = createClient()
@@ -35,6 +36,15 @@ export default async function SettingsPage() {
       </section>
 
       {/* Billing */}
+      {/* Integrations */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <Plug size={18} className="text-gray-500" />
+          <h2 className="text-lg font-semibold text-gray-900">Integrations</h2>
+        </div>
+        <GHLSettingsForm ghlApiKey={agency?.ghl_api_key} ghlLocationId={agency?.ghl_location_id} />
+      </section>
+
       <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-4">
           <CreditCard size={18} className="text-gray-500" />
