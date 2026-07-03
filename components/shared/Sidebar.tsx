@@ -6,7 +6,7 @@ import Image from 'next/image'
 import {
   LayoutDashboard, Bell, Briefcase, Users, Calendar, MapPin,
   UserCheck, BookOpen, MessageSquare, FileText, Settings,
-  LogOut, ChevronRight, Activity, Heart, Home,
+  LogOut, ChevronRight, Activity, Heart, Home, Plug,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAgency } from './AgencyProvider'
@@ -25,6 +25,7 @@ const adminNav = [
   { href: '/dashboard/admin/messages', label: 'Messages', icon: MessageSquare },
   { href: '/dashboard/admin/documents', label: 'Documents', icon: FileText },
   { href: '/dashboard/admin/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard/admin/integrations', label: 'Integrations', icon: Plug },
 ]
 
 const caregiverNav = [
