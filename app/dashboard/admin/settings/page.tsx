@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { BrandingSettingsForm } from '@/components/admin/BrandingSettingsForm'
+import { SeedDemoButton } from '@/components/admin/SeedDemoButton'
 import { InviteUserButton } from '@/components/admin/InviteUserButton'
-import { CreditCard, Users, Settings } from 'lucide-react'
+import { CreditCard, Users, Settings, Sparkles } from 'lucide-react'
 
 export default async function SettingsPage() {
   const supabase = createClient()
@@ -118,6 +119,15 @@ export default async function SettingsPage() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      {/* Demo Data */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles size={18} className="text-gray-500" />
+          <h2 className="text-lg font-semibold text-gray-900">Demo Data</h2>
+        </div>
+        <SeedDemoButton />
       </section>
     </div>
   )

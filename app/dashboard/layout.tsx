@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AgencyProvider } from '@/components/shared/AgencyProvider'
 import { Sidebar } from '@/components/shared/Sidebar'
+import { HelpChatbot } from '@/components/shared/HelpChatbot'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -42,6 +43,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <main className="flex-1 overflow-auto">
           {children}
         </main>
+        <HelpChatbot />
       </div>
     </AgencyProvider>
   )
